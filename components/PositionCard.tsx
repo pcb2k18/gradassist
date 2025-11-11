@@ -6,7 +6,25 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import SavePositionButton from '@/components/SavePositionButton'
 
-export default function PositionCard({ position }: any) {
+interface Position {
+  id: string;
+  title: string;
+  university: string;
+  department?: string;
+  position_type?: string;
+  location_city?: string;
+  location_state?: string;
+  stipend_amount?: number;
+  deadline?: string;
+  description?: string;
+  posted_date: string;
+}
+
+interface PositionCardProps {
+  position: Position;
+}
+
+export default function PositionCard({ position }: PositionCardProps) {
   return (
     <Card className="p-6">
       <div className="flex justify-between items-start mb-4">

@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 import { supabase } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
+  apiVersion: '2022-11-15',
 })
 
 export async function POST(req: Request) {
@@ -55,8 +55,11 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 })
   }
 }

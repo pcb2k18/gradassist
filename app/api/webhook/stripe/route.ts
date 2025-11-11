@@ -4,13 +4,12 @@ import Stripe from 'stripe'
 import { supabase } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
+  apiVersion: '2022-11-15',
 })
 
 export async function POST(req: Request) {
   const body = await req.text()
-  const headerPayload = await headers()  // ← ADD 'await' HERE!
-  const signature = headerPayload.get('Stripe-Signature') as string
+  const signature = headers().get('Stripe-Signature') as string
 
   let event: Stripe.Event
 
@@ -20,8 +19,11 @@ export async function POST(req: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
-  } catch (err: any) {
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 })
+  } catch (err) {
+    if (err instanceof Error) {
+      return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 })
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 400 })
   }
 
   switch (event.type) {
