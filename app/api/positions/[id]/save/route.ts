@@ -4,12 +4,15 @@ import { NextResponse } from 'next/server'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Await params in Next.js 15+
+  const { id } = await params
 
   // Get user's profile
   const { data: profile } = await supabase
@@ -42,7 +45,7 @@ export async function POST(
     .from('saved_positions')
     .insert({
       user_id: profile.id,
-      position_id: params.id,
+      position_id: id,
     })
     .select()
     .single()
@@ -59,12 +62,15 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Await params in Next.js 15+
+  const { id } = await params
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -80,7 +86,7 @@ export async function DELETE(
     .from('saved_positions')
     .delete()
     .eq('user_id', profile.id)
-    .eq('position_id', params.id)
+    .eq('position_id', id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
