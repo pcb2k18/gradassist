@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Search, Bell, FileText, TrendingUp } from 'lucide-react'
+import { CheckoutButton } from '@/components/CheckoutButton'
 
 export default function Home() {
   return (
@@ -101,7 +102,7 @@ export default function Home() {
             ]}
             cta="Start Free Trial"
             href="/sign-up"
-            priceId="prod_TP6pp2X1WfczYn"
+            priceId="price_XXXXXXXXXXXXXX"  // ← GET THIS FROM STRIPE
           />
           <PricingCard 
             name="Premium"
@@ -117,7 +118,7 @@ export default function Home() {
             ]}
             cta="Start Free Trial"
             href="/sign-up"
-            priceId="prod_TP6pOtjDnq96N8"
+            priceId="price_YYYYYYYYYYYYYY"  // ← GET THIS FROM STRIPE
           />
         </div>
       </section>
@@ -144,8 +145,6 @@ function FeatureCard({ icon, title, description }: any) {
   )
 }
 
-import { CheckoutButton } from '@/components/CheckoutButton'
-
 function PricingCard({ 
   name, 
   price, 
@@ -154,7 +153,7 @@ function PricingCard({
   cta, 
   href, 
   popular,
-  priceId // Add this prop
+  priceId
 }: any) {
   return (
     <div className={`border rounded-lg p-6 ${popular ? 'border-primary shadow-lg scale-105' : ''}`}>
@@ -177,7 +176,6 @@ function PricingCard({
         ))}
       </ul>
       
-      {/* UPDATED SECTION - Use CheckoutButton for paid plans */}
       {priceId ? (
         <CheckoutButton priceId={priceId} />
       ) : (
