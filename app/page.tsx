@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Search, Bell, FileText, TrendingUp } from 'lucide-react'
 import { CheckoutButton } from '@/components/CheckoutButton'
-import React from 'react'
 
 export default function Home() {
   return (
@@ -48,22 +47,22 @@ export default function Home() {
             Everything You Need to Get Funded
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard
+            <FeatureCard 
               icon={<Search className="h-8 w-8" />}
               title="Centralized Search"
               description="Browse thousands of GA positions from one place. No more checking hundreds of university websites."
             />
-            <FeatureCard
+            <FeatureCard 
               icon={<Bell className="h-8 w-8" />}
               title="Smart Alerts"
               description="Get notified when positions matching your field and preferences are posted."
             />
-            <FeatureCard
+            <FeatureCard 
               icon={<FileText className="h-8 w-8" />}
               title="Application Tracker"
               description="Manage all your applications in one place. Never miss a deadline again."
             />
-            <FeatureCard
+            <FeatureCard 
               icon={<TrendingUp className="h-8 w-8" />}
               title="Stipend Data"
               description="See average stipends by field and university. Know your worth."
@@ -76,7 +75,7 @@ export default function Home() {
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-12">Simple Pricing</h2>
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <PricingCard
+          <PricingCard 
             name="Free"
             price="$0"
             features={[
@@ -88,7 +87,7 @@ export default function Home() {
             cta="Get Started"
             href="/sign-up"
           />
-          <PricingCard
+          <PricingCard 
             name="Pro"
             price="$15"
             period="/month"
@@ -103,9 +102,9 @@ export default function Home() {
             ]}
             cta="Start Free Trial"
             href="/sign-up"
-            priceId="price_XXXXXXXXXXXXXX" // TODO: Replace with your actual Stripe Price ID
+            priceId="price_1SSIbjQdd1Qm80fTz3z1mcqV"  // ← GET THIS FROM STRIPE
           />
-          <PricingCard
+          <PricingCard 
             name="Premium"
             price="$29"
             period="/month"
@@ -119,7 +118,7 @@ export default function Home() {
             ]}
             cta="Start Free Trial"
             href="/sign-up"
-            priceId="price_YYYYYYYYYYYYYY" // TODO: Replace with your actual Stripe Price ID
+            priceId="price_1SSIbzQdd1Qm80fToDrgijYK"  // ← GET THIS FROM STRIPE
           />
         </div>
       </section>
@@ -134,13 +133,7 @@ export default function Home() {
   )
 }
 
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
+function FeatureCard({ icon, title, description }: any) {
   return (
     <div className="text-center">
       <div className="inline-flex items-center justify-center mb-4 text-primary">
@@ -152,27 +145,16 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
   )
 }
 
-interface PricingCardProps {
-  name: string;
-  price: string;
-  period?: string;
-  features: string[];
-  cta: string;
-  href?: string;
-  popular?: boolean;
-  priceId?: string;
-}
-
-function PricingCard({
-  name,
-  price,
-  period,
-  features,
-  cta,
-  href,
+function PricingCard({ 
+  name, 
+  price, 
+  period, 
+  features, 
+  cta, 
+  href, 
   popular,
   priceId
-}: PricingCardProps) {
+}: any) {
   return (
     <div className={`border rounded-lg p-6 ${popular ? 'border-primary shadow-lg scale-105' : ''}`}>
       {popular && (
@@ -193,11 +175,11 @@ function PricingCard({
           </li>
         ))}
       </ul>
-
+      
       {priceId ? (
         <CheckoutButton priceId={priceId} />
       ) : (
-        <Link href={href || ''}>
+        <Link href={href}>
           <Button className="w-full" variant={popular ? 'default' : 'outline'}>
             {cta}
           </Button>
