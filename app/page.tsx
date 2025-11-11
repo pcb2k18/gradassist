@@ -102,7 +102,7 @@ export default function Home() {
             ]}
             cta="Start Free Trial"
             href="/sign-up"
-            priceId="price_XXXXXXXXXXXXXX"  // ← GET THIS FROM STRIPE
+            priceId="price_1SSIbjQdd1Qm80fTz3z1mcqV"  // ← GET THIS FROM STRIPE
           />
           <PricingCard 
             name="Premium"
@@ -118,7 +118,7 @@ export default function Home() {
             ]}
             cta="Start Free Trial"
             href="/sign-up"
-            priceId="price_YYYYYYYYYYYYYY"  // ← GET THIS FROM STRIPE
+            priceId="price_1SSIbzQdd1Qm80fToDrgijYK"  // ← GET THIS FROM STRIPE
           />
         </div>
       </section>
