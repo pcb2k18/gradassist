@@ -54,7 +54,7 @@ export default function PricingPage() {
               "Advanced filters",
               "Priority support"
             ]}
-            priceId="prod_TP6pp2X1WfczYn" // 👈 YOUR PRO PRICE ID
+            priceId="price_1SSIbjQdd1Qm80fTz3z1mcqV" // Pro Plan - $15/month
           />
 
           {/* Premium Tier */}
@@ -70,7 +70,7 @@ export default function PricingPage() {
               "Resume storage",
               "1-on-1 support"
             ]}
-            priceId="prod_TP6pOtjDnq96N8" // 👈 YOUR PREMIUM PRICE ID
+            priceId="price_1SSIbzQdd1Qm80fToDrgijYK" // Premium Plan - $29/month
           />
         </div>
       </div>

@@ -8,17 +8,24 @@ export function CheckoutButton({ priceId }: { priceId: string }) {
 
   const handleCheckout = async () => {
     setLoading(true)
-    const res = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceId }),
-    })
-    const { url } = await res.json()
-    
-    if (url) {
-      window.location.href = url
-    } else {
-      alert('Error creating checkout session')
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      })
+      const data = await res.json()
+
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        console.error('Checkout error:', data.error)
+        alert(`Error: ${data.error || 'Failed to create checkout session'}`)
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Network error. Please check your connection and try again.')
       setLoading(false)
     }
   }
