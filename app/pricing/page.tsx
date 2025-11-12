@@ -6,15 +6,7 @@ import { Check } from 'lucide-react'
 export default function PricingPage() {
   return (
     <div className="min-h-screen">
-      {/* Header - reuse from your home page */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold">GradAssist</Link>
-          <Link href="/sign-in">
-            <Button variant="ghost">Sign In</Button>
-          </Link>
-        </div>
-      </header>
+      
 
       <div className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">

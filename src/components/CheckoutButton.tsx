@@ -56,7 +56,7 @@ export function CheckoutButton({ priceId }: { priceId: string }) {
 
   return (
     <Button onClick={handleCheckout} disabled={loading} className="w-full">
-      {loading ? 'Loading...' : isSignedIn ? 'Subscribe' : 'Sign In to Subscribe'}
+      {loading ? 'Loading...' : isSignedIn ? 'Subscribe' : 'Subscribe'}
     </Button>
   )
 }

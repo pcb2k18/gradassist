@@ -6,21 +6,7 @@ import { CheckoutButton } from '@/components/CheckoutButton'
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">GradAssist</h1>
-          <div className="space-x-4">
-            <Link href="/sign-in">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/sign-up">
-              <Button>Get Started</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
+     
       {/* Hero */}
       <section className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-5xl font-bold mb-6">

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
 
-export default function Header() {
+export function Header() {
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -10,16 +10,18 @@ export default function Header() {
           GradAssist
         </Link>
         
-        <nav className="hidden md:flex gap-6">
-          <Link href="/positions" className="hover:underline">
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/positions" className="text-sm font-medium hover:underline">
             Positions
           </Link>
-          <Link href="/dashboard" className="hover:underline">
-            Dashboard
-          </Link>
-          <Link href="/pricing" className="hover:underline">
+          <Link href="/pricing" className="text-sm font-medium hover:underline">
             Pricing
           </Link>
+          <SignedIn>
+            <Link href="/dashboard" className="text-sm font-medium hover:underline">
+              Dashboard
+            </Link>
+          </SignedIn>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -31,8 +33,15 @@ export default function Header() {
               <Button>Get Started</Button>
             </Link>
           </SignedOut>
+          
           <SignedIn>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton 
+              appearance={{
+                elements: {
+                  avatarBox: 'w-10 h-10'
+                }
+              }}
+            />
           </SignedIn>
         </div>
       </div>
