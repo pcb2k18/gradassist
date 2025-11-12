@@ -1,27 +1,85 @@
+import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { supabase } from '@/lib/supabase'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: Request) {
   try {
+    // Get authenticated user
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { priceId } = await req.json()
 
     if (!priceId) {
       return NextResponse.json({ error: 'Price ID is required' }, { status: 400 })
     }
 
-    console.log('Creating checkout session with priceId:', priceId)
+    // Get user info from Clerk to ensure profile exists
+    const clerkUser = await (await import('@clerk/nextjs/server')).clerkClient.users.getUser(userId)
+    
+    // Ensure profile exists (fallback)
+    await ensureProfile(
+      userId,
+      clerkUser.emailAddresses[0].emailAddress,
+      clerkUser.fullName || undefined
+    )
 
-    // Create checkout session WITHOUT requiring auth (for testing)
+    // Get user profile from Supabase
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('clerk_id', userId)
+      .single()
+
+    if (profileError || !profile) {
+      console.error('Profile error:', profileError)
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // Create or get Stripe customer
+    let customerId = profile.stripe_customer_id
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: profile.email,
+        name: profile.full_name || undefined,
+        metadata: { 
+          clerk_user_id: userId,
+          profile_id: profile.id,
+        },
+      })
+      customerId = customer.id
+
+      // Save customer ID to profile
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', profile.id)
+
+      console.log('Created Stripe customer:', customerId)
+    }
+
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
+      customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+      metadata: { 
+        clerk_user_id: userId,
+        profile_id: profile.id,
+      },
     })
 
-    console.log('Checkout session created:', session.url)
+    console.log('Checkout session created:', session.id)
 
     return NextResponse.json({ url: session.url })
   } catch (error: any) {
