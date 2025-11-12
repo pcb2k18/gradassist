@@ -1,5 +1,4 @@
-import { createRouteMatcher } from '@clerk/nextjs/server'
-import { clerkMiddleware } from '../lib/clerk'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -11,7 +10,7 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware((auth, request) => {
   if (!isPublicRoute(request)) {
-    auth.protect()
+    auth().protect()
   }
 })
 
