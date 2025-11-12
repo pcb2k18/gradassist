@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabase } from '@/lib/supabase'
@@ -22,7 +22,8 @@ export async function POST(req: Request) {
     }
 
     // Get user info from Clerk to ensure profile exists
-    const clerkUser = await (await import('@clerk/nextjs/server')).clerkClient.users.getUser(userId)
+    const client = await clerkClient()
+    const clerkUser = await client.users.getUser(userId)
     
     // Ensure profile exists (fallback)
     await ensureProfile(
