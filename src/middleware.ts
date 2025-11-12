@@ -1,5 +1,5 @@
 import { createRouteMatcher } from '@clerk/nextjs/server'
-import { clerkMiddleware } from 'lib/clerk'
+import { clerkMiddleware } from '../lib/clerk'
 
 const isPublicRoute = createRouteMatcher([
   '/',
