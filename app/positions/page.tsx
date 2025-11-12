@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import PositionCard from '@/components/PositionCard'
 import PositionFilters from '@/components/PositionFilters'
@@ -7,7 +8,7 @@ const fields = ['computer_science', 'biology', 'psychology', 'engineering', 'edu
 const states = ['CA', 'MA', 'NY', 'TX', 'IL', 'PA', 'OH']
 const positionTypes = ['teaching_assistant', 'research_assistant', 'administrative']
 
-export const revalidate = 3600 // Revalidate every hour
+export const dynamic = 'force-dynamic'
 
 export default async function PositionsPage({
   searchParams,
@@ -44,9 +45,11 @@ export default async function PositionsPage({
       <h1 className="text-4xl font-bold mb-8">Browse Positions</h1>
       
       <div className="grid lg:grid-cols-4 gap-8">
-        {/* Filters Sidebar */}
+        {/* Filters Sidebar - Wrapped in Suspense */}
         <aside className="lg:col-span-1">
-          <PositionFilters />
+          <Suspense fallback={<div>Loading filters...</div>}>
+            <PositionFilters />
+          </Suspense>
         </aside>
 
         {/* Positions List */}
