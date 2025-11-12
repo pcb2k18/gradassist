@@ -1,14 +1,13 @@
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { supabase } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabase-server'
 import { ensureProfile } from '@/lib/ensure-profile'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: Request) {
   try {
-    // Get authenticated user
     const { userId } = await auth()
     
     if (!userId) {
@@ -21,19 +20,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Price ID is required' }, { status: 400 })
     }
 
-    // Get user info from Clerk to ensure profile exists
     const client = await clerkClient()
     const clerkUser = await client.users.getUser(userId)
     
-    // Ensure profile exists (fallback)
     await ensureProfile(
       userId,
       clerkUser.emailAddresses[0].emailAddress,
       clerkUser.fullName || undefined
     )
 
-    // Get user profile from Supabase
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseServer
       .from('profiles')
       .select('*')
       .eq('clerk_id', userId)
@@ -44,7 +40,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Create or get Stripe customer
     let customerId = profile.stripe_customer_id
 
     if (!customerId) {
@@ -58,8 +53,7 @@ export async function POST(req: Request) {
       })
       customerId = customer.id
 
-      // Save customer ID to profile
-      await supabase
+      await supabaseServer
         .from('profiles')
         .update({ stripe_customer_id: customerId })
         .eq('id', profile.id)
@@ -67,7 +61,6 @@ export async function POST(req: Request) {
       console.log('Created Stripe customer:', customerId)
     }
 
-    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],

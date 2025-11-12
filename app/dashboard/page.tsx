@@ -1,6 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabase-server'
 import { ensureProfile } from '@/lib/ensure-profile'
 import { Card } from '@/components/ui/card'
 
@@ -17,21 +17,21 @@ export default async function DashboardPage() {
     user.fullName || undefined
   )
 
-  // Get user's profile from Supabase
-  const { data: profile } = await supabase
+  // Get user's profile from Supabase (using server client)
+  const { data: profile } = await supabaseServer
     .from('profiles')
     .select('*')
     .eq('clerk_id', user.id)
     .single()
 
-  // Get saved positions count
-  const { count: savedCount } = await supabase
+  // Get saved positions count (using server client)
+  const { count: savedCount } = await supabaseServer
     .from('saved_positions')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', profile?.id)
 
-  // Get applications count
-  const { count: applicationsCount } = await supabase
+  // Get applications count (using server client)
+  const { count: applicationsCount } = await supabaseServer
     .from('applications')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', profile?.id)

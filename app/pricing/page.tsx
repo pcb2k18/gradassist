@@ -46,7 +46,7 @@ export default function PricingPage() {
               "Advanced filters",
               "Priority support"
             ]}
-            priceId="prod_TP6pp2X1WfczYn" // 👈 YOUR PRO PRICE ID
+            priceId="price_1SSIbjQdd1Qm80fTz3z1mcqV" // 👈 YOUR PRO PRICE ID
           />
 
           {/* Premium Tier */}
@@ -62,7 +62,7 @@ export default function PricingPage() {
               "Resume storage",
               "1-on-1 support"
             ]}
-            priceId="prod_TP6pOtjDnq96N8" // 👈 YOUR PREMIUM PRICE ID
+            priceId="price_1SSIbzQdd1Qm80fToDrgijYK" // 👈 YOUR PREMIUM PRICE ID
           />
         </div>
       </div>
