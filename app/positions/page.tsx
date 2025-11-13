@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { currentUser } from '@clerk/nextjs/server'
 import PositionCard from '@/components/PositionCard'
 import PositionFilters from '@/components/PositionFilters'
 
@@ -39,6 +40,29 @@ export default async function PositionsPage({
     return <div>Error loading positions</div>
   }
 
+  // Fetch saved positions for the current user
+  const user = await currentUser()
+  let savedPositionIds: Set<string> = new Set()
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('clerk_id', user.id)
+      .single()
+
+    if (profile) {
+      const { data: savedPositions } = await supabase
+        .from('saved_positions')
+        .select('position_id')
+        .eq('user_id', profile.id)
+
+      if (savedPositions) {
+        savedPositionIds = new Set(savedPositions.map((sp) => sp.position_id))
+      }
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">Browse Positions</h1>
@@ -56,7 +80,11 @@ export default async function PositionsPage({
           </div>
           <div className="space-y-4">
             {positions?.map((position) => (
-              <PositionCard key={position.id} position={position} />
+              <PositionCard
+                key={position.id}
+                position={position}
+                isSaved={savedPositionIds.has(position.id)}
+              />
             ))}
           </div>
         </main>
