@@ -1,7 +1,7 @@
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     console.log('Creating profile for user:', id)
 
     // Create profile in Supabase
-    const { error } = await supabase.from('profiles').insert({
+    const { error } = await supabaseServer.from('profiles').insert({
       clerk_id: id,
       email: email_addresses[0].email_address,
       full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
@@ -68,8 +68,10 @@ export async function POST(req: Request) {
   if (eventType === 'user.updated') {
     const { id, email_addresses, first_name, last_name } = evt.data
 
+    console.log('Updating profile for user:', id)
+
     // Update profile in Supabase
-    const { error } = await supabase
+    const { error } = await supabaseServer
       .from('profiles')
       .update({
         email: email_addresses[0].email_address,
@@ -79,20 +81,26 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('Error updating profile:', error)
+    } else {
+      console.log('Profile updated successfully for:', id)
     }
   }
 
   if (eventType === 'user.deleted') {
     const { id } = evt.data
 
+    console.log('Deleting profile for user:', id)
+
     // Delete profile in Supabase (cascade will handle related data)
-    const { error } = await supabase
+    const { error } = await supabaseServer
       .from('profiles')
       .delete()
       .eq('clerk_id', id)
 
     if (error) {
       console.error('Error deleting profile:', error)
+    } else {
+      console.log('Profile deleted successfully for:', id)
     }
   }
 
