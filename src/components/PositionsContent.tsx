@@ -103,24 +103,48 @@ export default function PositionsContent() {
   }
 
   async function handleToggleSave(positionId: string) {
+    console.log('=== TOGGLE SAVE CLICKED ===')
+    console.log('User:', user)
+    console.log('Position ID:', positionId)
+
     if (!user) {
+      console.log('❌ Not signed in, redirecting...')
       router.push('/sign-in')
+      return
+    }
+
+    if (!user.id) {
+      console.log('❌ No user ID found!')
+      alert('Authentication error: No user ID found')
       return
     }
 
     const isSaved = savedPositionIds.has(positionId)
     const method = isSaved ? 'DELETE' : 'POST'
+    console.log('Method:', method)
+    console.log('User ID:', user.id)
 
     try {
+      console.log('Sending request to:', `/api/positions/${positionId}/save`)
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'x-user-id': user.id,
+      })
+
       const res = await fetch(`/api/positions/${positionId}/save`, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user.id,
         },
       })
+
+      console.log('Response status:', res.status)
       const data = await res.json()
+      console.log('Response data:', data)
 
       if (res.ok) {
+        console.log('✅ Success!')
         // Update local state
         setSavedPositionIds(prev => {
           const newSet = new Set(prev)
@@ -132,10 +156,11 @@ export default function PositionsContent() {
           return newSet
         })
       } else {
+        console.log('❌ Failed:', data.error)
         alert(data.error || 'Failed to save position')
       }
     } catch (error) {
-      console.error('Error toggling save:', error)
+      console.error('❌ Error toggling save:', error)
       alert('Failed to save position')
     }
   }

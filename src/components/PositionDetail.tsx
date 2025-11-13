@@ -1,12 +1,13 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Bookmark, BookmarkCheck, Share2, ExternalLink, MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
+import { Share2, ExternalLink, MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
+import SavePositionButton from '@/components/SavePositionButton'
 
 interface PositionDetailProps {
   position: any;
-  isSaved: boolean;
-  onToggleSave: (positionId: string) => void;
+  isSaved?: boolean;
+  onToggleSave?: (positionId: string) => void;
 }
 
 export default function PositionDetail({ 
@@ -33,14 +34,18 @@ export default function PositionDetail({
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
-          <Button
-            variant={isSaved ? 'default' : 'outline'}
-            onClick={() => onToggleSave(position.id)}
-            className={isSaved ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-          >
-            {isSaved ? <BookmarkCheck className="h-4 w-4 mr-2" /> : <Bookmark className="h-4 w-4 mr-2" />}
-            {isSaved ? 'Saved' : 'Save'}
-          </Button>
+          {/* Use SavePositionButton if no callback provided, otherwise use callback for backwards compatibility */}
+          {onToggleSave ? (
+            <Button
+              variant={isSaved ? 'default' : 'outline'}
+              onClick={() => onToggleSave(position.id)}
+              className={isSaved ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+            >
+              {isSaved ? 'Saved' : 'Save'}
+            </Button>
+          ) : (
+            <SavePositionButton positionId={position.id} initialSaved={isSaved} />
+          )}
           <Button variant="outline">
             <Share2 className="h-4 w-4 mr-2" />
             Share

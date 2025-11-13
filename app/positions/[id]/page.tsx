@@ -4,6 +4,7 @@ import PositionDetail from '@/components/PositionDetail'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { auth } from '@clerk/nextjs/server'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const { data: position } = await supabaseServer
@@ -35,6 +36,31 @@ export default async function PositionDetailPage({ params }: { params: { id: str
     notFound()
   }
 
+  // Check if position is saved by current user
+  let isSaved = false
+  const { userId } = await auth()
+
+  if (userId) {
+    // Get user's profile
+    const { data: profile } = await supabaseServer
+      .from('profiles')
+      .select('id')
+      .eq('clerk_id', userId)
+      .single()
+
+    if (profile) {
+      // Check if position is saved
+      const { data: savedPosition } = await supabaseServer
+        .from('saved_positions')
+        .select('id')
+        .eq('user_id', profile.id)
+        .eq('position_id', params.id)
+        .single()
+
+      isSaved = !!savedPosition
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back Button - Mobile */}
@@ -50,7 +76,7 @@ export default async function PositionDetailPage({ params }: { params: { id: str
       </div>
 
       {/* Position Detail */}
-      <PositionDetail position={position} />
+      <PositionDetail position={position} isSaved={isSaved} />
     </div>
   )
 }
