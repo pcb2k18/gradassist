@@ -1,12 +1,19 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Bookmark, BookmarkCheck, Share2, ExternalLink, MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
 
-export default function PositionDetail({ position }: { position: any }) {
-  const [saved, setSaved] = useState(false)
+interface PositionDetailProps {
+  position: any;
+  isSaved: boolean;
+  onToggleSave: (positionId: string) => void;
+}
 
+export default function PositionDetail({ 
+  position, 
+  isSaved, 
+  onToggleSave 
+}: PositionDetailProps) {
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
@@ -27,12 +34,12 @@ export default function PositionDetail({ position }: { position: any }) {
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
           <Button
-            variant={saved ? 'default' : 'outline'}
-            onClick={() => setSaved(!saved)}
-            className={saved ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+            variant={isSaved ? 'default' : 'outline'}
+            onClick={() => onToggleSave(position.id)}
+            className={isSaved ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
           >
-            {saved ? <BookmarkCheck className="h-4 w-4 mr-2" /> : <Bookmark className="h-4 w-4 mr-2" />}
-            {saved ? 'Saved' : 'Save'}
+            {isSaved ? <BookmarkCheck className="h-4 w-4 mr-2" /> : <Bookmark className="h-4 w-4 mr-2" />}
+            {isSaved ? 'Saved' : 'Save'}
           </Button>
           <Button variant="outline">
             <Share2 className="h-4 w-4 mr-2" />

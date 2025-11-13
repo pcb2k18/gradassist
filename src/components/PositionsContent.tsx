@@ -169,7 +169,11 @@ export default function PositionsContent() {
 
             <div className="hidden lg:block bg-gray-50 overflow-y-auto">
               {selectedPosition ? (
-                <PositionDetail position={selectedPosition} />
+                <PositionDetail 
+                  position={selectedPosition}
+                  isSaved={savedPositionIds.has(selectedPosition.id)}
+                  onToggleSave={handleToggleSave}
+                />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   Select a position to view details
@@ -183,5 +187,4 @@ export default function PositionsContent() {
   )
 }
 
-// Missing import
-import PositionsSidebar from './PositionsSidebar'
+import PositionsSidebar from '@/components/PositionsSidebar'
