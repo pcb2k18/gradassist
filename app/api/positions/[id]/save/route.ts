@@ -3,11 +3,12 @@ import { supabaseServer } from '@/lib/supabase-server'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     console.log('=== SAVE API CALLED ===')
-    console.log('Position ID:', params.id)
+    console.log('Position ID:', id)
     
     // Get userId from request header (sent from client)
     const userId = request.headers.get('x-user-id')
@@ -58,7 +59,7 @@ export async function POST(
       .from('saved_positions')
       .insert({
         user_id: profile.id,
-        position_id: params.id,
+        position_id: id,
       })
       .select()
       .single()
@@ -82,9 +83,10 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     console.log('=== DELETE API CALLED ===')
     const userId = request.headers.get('x-user-id')
     console.log('User ID:', userId)
@@ -107,7 +109,7 @@ export async function DELETE(
       .from('saved_positions')
       .delete()
       .eq('user_id', profile.id)
-      .eq('position_id', params.id)
+      .eq('position_id', id)
 
     if (error) {
       console.error('Delete error:', error)
