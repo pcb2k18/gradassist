@@ -3,9 +3,12 @@ import { supabaseServer } from '@/lib/supabase-server'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params in Next.js 15
+    const params = await context.params
+    
     console.log('=== SAVE API CALLED ===')
     console.log('Position ID:', params.id)
     
@@ -82,9 +85,12 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params in Next.js 15
+    const params = await context.params
+    
     console.log('=== DELETE API CALLED ===')
     const userId = request.headers.get('x-user-id')
     console.log('User ID:', userId)
