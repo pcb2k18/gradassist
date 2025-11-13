@@ -4,13 +4,20 @@ import PositionDetail from '@/components/PositionDetail'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { auth } from '@clerk/nextjs/server'
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
+  
   const { data: position } = await supabaseServer
     .from('positions')
     .select('title, university')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!position) {
@@ -25,46 +32,31 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   }
 }
 
-export default async function PositionDetailPage({ params }: { params: { id: string } }) {
+export default async function PositionDetailPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
+  
   const { data: position } = await supabaseServer
     .from('positions')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!position) {
     notFound()
   }
 
-  // Check if position is saved by current user
-  let isSaved = false
-  const { userId } = await auth()
-
-  if (userId) {
-    // Get user's profile
-    const { data: profile } = await supabaseServer
-      .from('profiles')
-      .select('id')
-      .eq('clerk_id', userId)
-      .single()
-
-    if (profile) {
-      // Check if position is saved
-      const { data: savedPosition } = await supabaseServer
-        .from('saved_positions')
-        .select('id')
-        .eq('user_id', profile.id)
-        .eq('position_id', params.id)
-        .single()
-
-      isSaved = !!savedPosition
-    }
-  }
+  // For now, set isSaved to false
+  // The SavePositionButton component will handle the actual saved state
+  const isSaved = false
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back Button - Mobile */}
-      <div className="bg-white border-b lg:hidden sticky top-16 z-40">
+      <div className="bg-white border-b lg:hidden sticky top-0 z-40">
         <div className="container mx-auto px-4 py-3">
           <Link href="/positions">
             <Button variant="ghost" size="sm">

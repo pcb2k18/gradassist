@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import PositionFilters from './PositionFilters'
 import PositionsList from './PositionsList'
 import PositionDetail from './PositionDetail'
+import PositionsSidebar from '@/components/PositionsSidebar'
 import { Loader2 } from 'lucide-react'
 
 export default function PositionsContent() {
@@ -19,37 +20,54 @@ export default function PositionsContent() {
   const [totalCount, setTotalCount] = useState(0)
   const [savedPositionIds, setSavedPositionIds] = useState<Set<string>>(new Set())
 
+  // Fetch positions when search params change
   useEffect(() => {
     fetchPositions()
+  }, [searchParams])
+
+  // Fetch saved positions when user loads
+  useEffect(() => {
     if (user) {
+      console.log('👤 User loaded, fetching saved positions...')
       fetchSavedPositions()
     }
-  }, [searchParams, user])
+  }, [user])
 
   async function fetchSavedPositions() {
     if (!user) return
 
     try {
+      console.log('📥 Fetching saved positions for user:', user.id)
+      
       // Get user's profile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('clerk_id', user.id)
         .single()
 
+      console.log('Profile:', profile, 'Error:', profileError)
+
       if (profile) {
         // Get saved position IDs
-        const { data: savedPositions } = await supabase
+        const { data: savedPositions, error: savedError } = await supabase
           .from('saved_positions')
           .select('position_id')
           .eq('user_id', profile.id)
 
+        console.log('Saved positions from DB:', savedPositions, 'Error:', savedError)
+
         if (savedPositions) {
-          setSavedPositionIds(new Set(savedPositions.map(sp => sp.position_id)))
+          const savedIds = new Set(savedPositions.map(sp => sp.position_id))
+          console.log('✅ Loaded saved positions:', Array.from(savedIds))
+          setSavedPositionIds(savedIds)
+        } else {
+          console.log('No saved positions found')
+          setSavedPositionIds(new Set())
         }
       }
     } catch (error) {
-      console.error('Error fetching saved positions:', error)
+      console.error('❌ Error fetching saved positions:', error)
     }
   }
 
@@ -121,15 +139,11 @@ export default function PositionsContent() {
 
     const isSaved = savedPositionIds.has(positionId)
     const method = isSaved ? 'DELETE' : 'POST'
-    console.log('Method:', method)
+    console.log('Method:', method, 'isSaved:', isSaved)
     console.log('User ID:', user.id)
 
     try {
       console.log('Sending request to:', `/api/positions/${positionId}/save`)
-      console.log('Headers:', {
-        'Content-Type': 'application/json',
-        'x-user-id': user.id,
-      })
 
       const res = await fetch(`/api/positions/${positionId}/save`, {
         method,
@@ -144,17 +158,9 @@ export default function PositionsContent() {
       console.log('Response data:', data)
 
       if (res.ok) {
-        console.log('✅ Success!')
-        // Update local state
-        setSavedPositionIds(prev => {
-          const newSet = new Set(prev)
-          if (isSaved) {
-            newSet.delete(positionId)
-          } else {
-            newSet.add(positionId)
-          }
-          return newSet
-        })
+        console.log('✅ API Success! Re-fetching saved positions...')
+        // Re-fetch from database to ensure sync
+        await fetchSavedPositions()
       } else {
         console.log('❌ Failed:', data.error)
         alert(data.error || 'Failed to save position')
@@ -216,5 +222,3 @@ export default function PositionsContent() {
     </div>
   )
 }
-
-import PositionsSidebar from '@/components/PositionsSidebar'
