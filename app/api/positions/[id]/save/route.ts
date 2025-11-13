@@ -1,47 +1,32 @@
-import { auth } from '@clerk/nextjs/server'
-import { supabaseServer } from '@/lib/supabase-server'
-import { ensureProfile } from '@/lib/ensure-profile'
 import { NextResponse } from 'next/server'
-import { clerkClient } from '@clerk/nextjs/server'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { userId } = await auth()
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { id } = await params
-
   try {
-    // Get user info from Clerk
-    const client = await clerkClient()
-    const clerkUser = await client.users.getUser(userId)
+    // Get userId from request header (sent from client)
+    const userId = request.headers.get('x-user-id')
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // Ensure profile exists
-    await ensureProfile(
-      userId,
-      clerkUser.emailAddresses[0].emailAddress,
-      clerkUser.fullName || undefined
-    )
-
-    // Get user's profile
-    const { data: profile, error: profileError } = await supabaseServer
+    // Get user's profile from Supabase
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, subscription_tier')
       .eq('clerk_id', userId)
       .single()
 
-    if (profileError || !profile) {
-      console.error('Profile error:', profileError)
+    if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Check if free tier limit reached
+    // Check free tier limit (5 saved positions)
     if (profile.subscription_tier === 'free') {
-      const { count } = await supabaseServer
+      const { count } = await supabase
         .from('saved_positions')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', profile.id)
@@ -55,17 +40,17 @@ export async function POST(
     }
 
     // Save position
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabase
       .from('saved_positions')
       .insert({
         user_id: profile.id,
-        position_id: id,
+        position_id: params.id,
       })
       .select()
       .single()
 
     if (error) {
-      if (error.code === '23505') {
+      if (error.code === '23505') { // Unique constraint violation
         return NextResponse.json({ error: 'Position already saved' }, { status: 400 })
       }
       console.error('Save error:', error)
@@ -74,27 +59,23 @@ export async function POST(
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('API error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { userId } = await auth()
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { id } = await params
-
   try {
-    const { data: profile } = await supabaseServer
+    const userId = request.headers.get('x-user-id')
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: profile } = await supabase
       .from('profiles')
       .select('id')
       .eq('clerk_id', userId)
@@ -104,11 +85,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    const { error } = await supabaseServer
+    const { error } = await supabase
       .from('saved_positions')
       .delete()
       .eq('user_id', profile.id)
-      .eq('position_id', id)
+      .eq('position_id', params.id)
 
     if (error) {
       console.error('Delete error:', error)
@@ -117,10 +98,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('API error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

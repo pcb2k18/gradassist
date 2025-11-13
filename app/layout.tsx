@@ -23,8 +23,8 @@ export default function RootLayout({
 
   return (
     <ClerkProvider publishableKey={publishableKey}>
-      <html lang="en">
-        <body className={inter.className}>
+      <html lang="en" className="h-full">
+        <body className={`${inter.className} h-full`}>
           <Header />
           {children}
         </body>
