@@ -15,30 +15,60 @@ export default function SavePositionButton({
 }) {
   const [saved, setSaved] = useState(initialSaved)
   const [loading, setLoading] = useState(false)
-  const { isSignedIn } = useAuth()
+  const { isSignedIn, userId } = useAuth()
   const router = useRouter()
 
   const handleSave = async () => {
+    console.log('=== SAVE BUTTON CLICKED ===')
+    console.log('isSignedIn:', isSignedIn)
+    console.log('userId:', userId)
+    console.log('positionId:', positionId)
+    
     if (!isSignedIn) {
+      console.log('❌ Not signed in, redirecting...')
       router.push('/sign-in')
+      return
+    }
+
+    if (!userId) {
+      console.log('❌ No userId found!')
+      alert('Authentication error: No user ID found')
       return
     }
 
     setLoading(true)
     const method = saved ? 'DELETE' : 'POST'
-    
+    console.log('Method:', method)
+
     try {
-      const res = await fetch(`/api/positions/${positionId}/save`, { method })
+      console.log('Sending request to:', `/api/positions/${positionId}/save`)
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'x-user-id': userId,
+      })
+
+      const res = await fetch(`/api/positions/${positionId}/save`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId,
+        },
+      })
+      
+      console.log('Response status:', res.status)
       const data = await res.json()
+      console.log('Response data:', data)
 
       if (res.ok) {
+        console.log('✅ Success!')
         setSaved(!saved)
         router.refresh()
       } else {
+        console.log('❌ Failed:', data.error)
         alert(data.error || 'Failed to save position')
       }
     } catch (error) {
-      console.error('Save error:', error)
+      console.error('❌ Save error:', error)
       alert('Failed to save position')
     } finally {
       setLoading(false)
