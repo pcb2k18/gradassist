@@ -44,8 +44,10 @@ export async function POST(req: Request) {
   const eventType = evt.type
 
   if (eventType === 'user.created') {
+    console.log('--- USER CREATED ---')
     const { id, email_addresses, first_name, last_name } = evt.data
 
+    console.log('Webhook event data:', JSON.stringify(evt.data, null, 2))
     console.log('Creating profile for user:', id)
 
     // Create profile in Supabase
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
     })
 
     if (error) {
-      console.error('Error creating profile:', error)
+      console.error('Error creating profile:', JSON.stringify(error, null, 2))
       return new NextResponse('Error creating profile', { status: 500 })
     }
 

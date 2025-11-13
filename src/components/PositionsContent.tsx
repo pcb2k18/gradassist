@@ -115,7 +115,7 @@ export default function PositionsContent() {
       const res = await fetch(`/api/positions/${positionId}/save`, {
         method,
         headers: {
-          'x-user-id': user.id,
+          'Content-Type': 'application/json',
         },
       })
       const data = await res.json()

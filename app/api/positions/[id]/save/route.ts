@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabase-server'
 
 export async function POST(
   request: Request,
@@ -14,7 +14,7 @@ export async function POST(
     }
 
     // Get user's profile from Supabase
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseServer
       .from('profiles')
       .select('id, subscription_tier')
       .eq('clerk_id', userId)
@@ -26,7 +26,7 @@ export async function POST(
 
     // Check free tier limit (5 saved positions)
     if (profile.subscription_tier === 'free') {
-      const { count } = await supabase
+      const { count } = await supabaseServer
         .from('saved_positions')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', profile.id)
@@ -40,7 +40,7 @@ export async function POST(
     }
 
     // Save position
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('saved_positions')
       .insert({
         user_id: profile.id,
@@ -75,7 +75,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseServer
       .from('profiles')
       .select('id')
       .eq('clerk_id', userId)
@@ -85,7 +85,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseServer
       .from('saved_positions')
       .delete()
       .eq('user_id', profile.id)
