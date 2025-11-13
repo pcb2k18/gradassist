@@ -1,14 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-// Define public routes (no authentication required)
 const isPublicRoute = createRouteMatcher([
   '/',
   '/positions(.*)',
   '/pricing',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/api/webhook/stripe(.*)',  // ← Add this
-  '/api/webhook/clerk(.*)',   // ← Add this
 ])
 
 export default clerkMiddleware(async (auth, request) => {
@@ -19,7 +16,9 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    // Exclude webhooks entirely from middleware
+    '/((?!_next|api/webhook|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Include API routes but exclude webhook routes
+    '/(api|trpc)(?!/webhook)(.*)',
   ],
 }
