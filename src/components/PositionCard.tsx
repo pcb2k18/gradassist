@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import SavePositionButton from '@/components/SavePositionButton'
 
-export default function PositionCard({ position }: any) {
+export default function PositionCard({ position, isSaved = false }: { position: any, isSaved?: boolean }) {
   return (
     <Card className="p-6">
       <div className="flex justify-between items-start mb-4">
@@ -48,10 +48,10 @@ export default function PositionCard({ position }: any) {
       )}
 
       <div className="flex gap-2">
-        <Link href={`/positions/${position.id}`}>
-          <Button variant="outline">View Details</Button>
+        <Link href={position.application_url} target="_blank">
+          <Button variant="outline" size="sm">Apply</Button>
         </Link>
-        <SavePositionButton positionId={position.id} initialSaved={false} />
+        <SavePositionButton positionId={position.id} initialSaved={isSaved} />
       </div>
 
       <div className="mt-4 text-xs text-muted-foreground">

@@ -21,6 +21,9 @@ export function Header() {
             <Link href="/dashboard" className="text-sm font-medium hover:underline">
               Dashboard
             </Link>
+            <Link href="/dashboard/saved" className="text-sm font-medium hover:underline">
+              Saved
+            </Link>
           </SignedIn>
         </nav>
 

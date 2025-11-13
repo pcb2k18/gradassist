@@ -12,7 +12,7 @@ export default function PositionFilters() {
 
   const handleFilterChange = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value) {
+    if (value && value !== 'all') {
       params.set(key, value)
     } else {
       params.delete(key)
@@ -34,19 +34,20 @@ export default function PositionFilters() {
       <div>
         <Label>Field of Study</Label>
         <Select 
-          defaultValue={searchParams.get('field') || ''}
+          value={searchParams.get('field') || 'all'}
           onValueChange={(val) => handleFilterChange('field', val)}
         >
           <SelectTrigger>
             <SelectValue placeholder="All fields" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All fields</SelectItem>
+            <SelectItem value="all">All fields</SelectItem>
             <SelectItem value="computer_science">Computer Science</SelectItem>
             <SelectItem value="biology">Biology</SelectItem>
             <SelectItem value="psychology">Psychology</SelectItem>
             <SelectItem value="engineering">Engineering</SelectItem>
             <SelectItem value="education">Education</SelectItem>
+            <SelectItem value="business">Business</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -54,18 +55,26 @@ export default function PositionFilters() {
       <div>
         <Label>Location</Label>
         <Select 
-          defaultValue={searchParams.get('state') || ''}
+          value={searchParams.get('state') || 'all'}
           onValueChange={(val) => handleFilterChange('state', val)}
         >
           <SelectTrigger>
             <SelectValue placeholder="All locations" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All locations</SelectItem>
+            <SelectItem value="all">All locations</SelectItem>
             <SelectItem value="CA">California</SelectItem>
             <SelectItem value="MA">Massachusetts</SelectItem>
             <SelectItem value="NY">New York</SelectItem>
             <SelectItem value="TX">Texas</SelectItem>
+            <SelectItem value="PA">Pennsylvania</SelectItem>
+            <SelectItem value="IL">Illinois</SelectItem>
+            <SelectItem value="GA">Georgia</SelectItem>
+            <SelectItem value="MI">Michigan</SelectItem>
+            <SelectItem value="CT">Connecticut</SelectItem>
+            <SelectItem value="IN">Indiana</SelectItem>
+            <SelectItem value="MN">Minnesota</SelectItem>
+            <SelectItem value="WI">Wisconsin</SelectItem>
           </SelectContent>
         </Select>
       </div>

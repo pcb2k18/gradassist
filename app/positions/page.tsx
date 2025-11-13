@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabase-server'
 import PositionCard from '@/components/PositionCard'
 import PositionFilters from '@/components/PositionFilters'
+import { currentUser } from '@clerk/nextjs/server'
 
 // Add more filter options
 const fields = ['computer_science', 'biology', 'psychology', 'engineering', 'education', 'business']
@@ -13,24 +14,27 @@ export const dynamic = 'force-dynamic'
 export default async function PositionsPage({
   searchParams,
 }: {
-  searchParams: { field?: string; state?: string; search?: string }
+  searchParams: Promise<{ field?: string; state?: string; search?: string }>
 }) {
+  // Await searchParams in Next.js 15+
+  const params = await searchParams
+
   // Build query
-  let query = supabase
+  let query = supabaseServer
     .from('positions')
     .select('*')
     .eq('is_active', true)
     .order('posted_date', { ascending: false })
     .limit(50)
 
-  if (searchParams.field) {
-    query = query.eq('field_of_study', searchParams.field)
+  if (params.field) {
+    query = query.eq('field_of_study', params.field)
   }
-  if (searchParams.state) {
-    query = query.eq('location_state', searchParams.state)
+  if (params.state) {
+    query = query.eq('location_state', params.state)
   }
-  if (searchParams.search) {
-    query = query.ilike('title', `%${searchParams.search}%`)
+  if (params.search) {
+    query = query.ilike('title', `%${params.search}%`)
   }
 
   const { data: positions, error } = await query
@@ -40,12 +44,35 @@ export default async function PositionsPage({
     return <div>Error loading positions</div>
   }
 
+  // Get current user and their saved positions
+  const user = await currentUser()
+  let savedPositionIds: string[] = []
+
+  if (user) {
+    // Get user's profile
+    const { data: profile } = await supabaseServer
+      .from('profiles')
+      .select('id')
+      .eq('clerk_id', user.id)
+      .single()
+
+    if (profile) {
+      // Get all saved position IDs for this user
+      const { data: savedPositions } = await supabaseServer
+        .from('saved_positions')
+        .select('position_id')
+        .eq('user_id', profile.id)
+
+      savedPositionIds = savedPositions?.map(sp => sp.position_id) || []
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">Browse Positions</h1>
       
       <div className="grid lg:grid-cols-4 gap-8">
-        {/* Filters Sidebar - Wrapped in Suspense */}
+        {/* Filters Sidebar */}
         <aside className="lg:col-span-1">
           <Suspense fallback={<div>Loading filters...</div>}>
             <PositionFilters />
@@ -59,7 +86,11 @@ export default async function PositionsPage({
           </div>
           <div className="space-y-4">
             {positions?.map((position) => (
-              <PositionCard key={position.id} position={position} />
+              <PositionCard 
+                key={position.id} 
+                position={position}
+                isSaved={savedPositionIds.includes(position.id)}
+              />
             ))}
           </div>
         </main>
