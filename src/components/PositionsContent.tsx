@@ -112,7 +112,12 @@ export default function PositionsContent() {
     const method = isSaved ? 'DELETE' : 'POST'
 
     try {
-      const res = await fetch(`/api/positions/${positionId}/save`, { method })
+      const res = await fetch(`/api/positions/${positionId}/save`, {
+        method,
+        headers: {
+          'x-user-id': user.id,
+        },
+      })
       const data = await res.json()
 
       if (res.ok) {
