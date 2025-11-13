@@ -1,31 +1,24 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export function CheckoutButton({ priceId }: { priceId: string }) {
-  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
-  const handleCheckout = async () => {
-    setLoading(true)
-    const res = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceId }),
-    })
-    const { url } = await res.json()
-    
-    if (url) {
-      window.location.href = url
-    } else {
-      alert('Error creating checkout session')
-      setLoading(false)
+  const handleCheckout = () => {
+    if (!priceId) {
+      alert('Price ID is missing')
+      return
     }
+
+    // Simply redirect to checkout page with priceId
+    router.push(`/checkout?priceId=${priceId}`)
   }
 
   return (
-    <Button onClick={handleCheckout} disabled={loading} className="w-full">
-      {loading ? 'Loading...' : 'Subscribe'}
+    <Button onClick={handleCheckout} className="w-full">
+      Subscribe
     </Button>
   )
 }

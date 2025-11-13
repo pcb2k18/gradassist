@@ -1,5 +1,6 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
+import { Header } from '@/components/Header'
 
 export const metadata = {
   title: 'GradAssist - Find Graduate Assistantships',
@@ -11,10 +12,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  
+  if (!publishableKey) {
+    throw new Error('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY')
+  }
+
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      <html lang="en">
-        <body className="font-sans antialiased">{children}</body>
+    <ClerkProvider publishableKey={publishableKey}>
+      <html lang="en" className="h-full">
+        <body className={`${inter.className} h-full`}>
+          <Header />
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   )

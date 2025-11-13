@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { useAuth } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Bookmark, BookmarkCheck } from 'lucide-react'
+import { useState } from 'react'
+import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
 export default function SavePositionButton({ 
@@ -15,11 +15,11 @@ export default function SavePositionButton({
 }) {
   const [saved, setSaved] = useState(initialSaved)
   const [loading, setLoading] = useState(false)
-  const { userId } = useAuth()
+  const { isSignedIn } = useAuth()
   const router = useRouter()
 
   const handleSave = async () => {
-    if (!userId) {
+    if (!isSignedIn) {
       router.push('/sign-in')
       return
     }
@@ -33,11 +33,12 @@ export default function SavePositionButton({
 
       if (res.ok) {
         setSaved(!saved)
+        router.refresh()
       } else {
-        alert(data.error || 'Something went wrong')
+        alert(data.error || 'Failed to save position')
       }
     } catch (error) {
-      console.error('Error saving position:', error)
+      console.error('Save error:', error)
       alert('Failed to save position')
     } finally {
       setLoading(false)
@@ -49,6 +50,7 @@ export default function SavePositionButton({
       onClick={handleSave} 
       disabled={loading} 
       variant={saved ? 'default' : 'outline'}
+      size="sm"
     >
       {saved ? (
         <>
@@ -58,7 +60,7 @@ export default function SavePositionButton({
       ) : (
         <>
           <Bookmark className="mr-2 h-4 w-4" />
-          Save Position
+          Save
         </>
       )}
     </Button>

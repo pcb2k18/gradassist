@@ -1,41 +1,88 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
 
-export default function Header() {
-  return (
-    <header className="border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold">
-          GradAssist
-        </Link>
-        
-        <nav className="hidden md:flex gap-6">
-          <Link href="/positions" className="hover:underline">
-            Positions
-          </Link>
-          <Link href="/dashboard" className="hover:underline">
-            Dashboard
-          </Link>
-          <Link href="/pricing" className="hover:underline">
-            Pricing
-          </Link>
-        </nav>
+export function Header() {
+  const pathname = usePathname()
+  
+  // Hide header on positions page (sidebar will show logo)
+  if (pathname?.startsWith('/positions')) {
+    return null
+  }
 
-        <div className="flex items-center gap-4">
-          <SignedOut>
-            <Link href="/sign-in">
-              <Button variant="ghost">Sign In</Button>
+  return (
+    <nav className="bg-white border-b sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="text-2xl font-bold text-gray-900">
+            GradAssist
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-8">
+            <Link 
+              href="/positions" 
+              className={`transition-colors ${
+                pathname === '/positions' || pathname?.startsWith('/positions/')
+                  ? 'text-emerald-600 font-medium' 
+                  : 'text-gray-600 hover:text-emerald-600'
+              }`}
+            >
+              Positions
             </Link>
-            <Link href="/sign-up">
-              <Button>Get Started</Button>
+            <Link 
+              href="/pricing" 
+              className={`transition-colors ${
+                pathname === '/pricing' 
+                  ? 'text-emerald-600 font-medium' 
+                  : 'text-gray-600 hover:text-emerald-600'
+              }`}
+            >
+              Pricing
             </Link>
-          </SignedOut>
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+            
+            <SignedIn>
+              <Link 
+                href="/dashboard" 
+                className={`transition-colors ${
+                  pathname === '/dashboard' 
+                    ? 'text-emerald-600 font-medium' 
+                    : 'text-gray-600 hover:text-emerald-600'
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                href="/dashboard/saved" 
+                className={`transition-colors ${
+                  pathname === '/dashboard/saved' 
+                    ? 'text-emerald-600 font-medium' 
+                    : 'text-gray-600 hover:text-emerald-600'
+                }`}
+              >
+                Saved
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            
+            <SignedOut>
+              <Link 
+                href="/sign-in" 
+                className="text-gray-600 hover:text-emerald-600 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link href="/sign-up">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
+                  Get Started
+                </Button>
+              </Link>
+            </SignedOut>
+          </div>
         </div>
       </div>
-    </header>
+    </nav>
   )
 }
