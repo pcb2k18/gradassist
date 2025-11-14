@@ -203,63 +203,54 @@ export default async function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-gray-900 text-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Choose the plan that fits your needs</h2>
-            <p className="text-xl text-gray-400">Simple, transparent pricing for every graduate student</p>
-          </div>
+<section className="py-20 bg-gray-900 text-white">
+  <div className="container mx-auto px-4">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+      <p className="text-xl text-gray-400">Start free, upgrade when you're ready</p>
+    </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <PricingCard 
-              name="Free"
-              price="$0"
-              period="/month"
-              features={[
-                "Search all positions",
-                "Save up to 5 positions",
-                "Basic filters",
-                "Weekly email digest"
-              ]}
-              buttonText="Get Started"
-              buttonLink="/sign-up"
-            />
-            
-            <PricingCard 
-              name="Pro"
-              price="$15"
-              period="/month"
-              popular
-              features={[
-                "Everything in Free",
-                "Unlimited saved positions",
-                "Application tracker",
-                "Daily alerts",
-                "Advanced filters",
-                "Priority support"
-              ]}
-              buttonText="Start Free Trial"
-              buttonLink="/sign-up"
-            />
-            
-            <PricingCard 
-              name="Premium"
-              price="$29"
-              period="/month"
-              features={[
-                "Everything in Pro",
-                "AI cover letter generator",
-                "Stipend insights",
-                "Early access to positions",
-                "Resume storage",
-                "1-on-1 support"
-              ]}
-              buttonText="Start Free Trial"
-              buttonLink="/sign-up"
-            />
-          </div>
-        </div>
-      </section>
+    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <PricingCard 
+        name="Basic"
+        price="$0"
+        period="/forever"
+        features={[
+          "View up to 50 positions",
+          "Save up to 5 positions",
+          "Basic search & filters",
+          "Field, location, type filters"
+        ]}
+        buttonText="Get Started Free"
+        buttonLink="/sign-up"
+        dark
+      />
+      
+      <PricingCard 
+        name="Pro"
+        price="$11.99"
+        period="/month"
+        popular
+        features={[
+          "Access to ALL 1,000+ positions",
+          "Unlimited saved positions",
+          "Application tracker",
+          "Advanced filters (stipend, deadline)",
+          "Email alerts (weekly + instant)",
+          "Early access (24hrs before free)",
+          "Priority support"
+        ]}
+        buttonText="Upgrade to Pro"
+        buttonLink="/pricing"
+        dark
+      />
+    </div>
+
+    <p className="text-center text-gray-400 mt-8">
+      All plans include access to positions from 400+ universities
+    </p>
+  </div>
+</section>
 
       {/* Testimonials Section */}
       <section className="py-20 bg-white">
@@ -461,29 +452,72 @@ function HowItWorksStep({ icon, number, title, description }: any) {
   )
 }
 
-function PricingCard({ name, price, period, features, buttonText, buttonLink, popular }: any) {
+function PricingCard({ 
+  name, 
+  price, 
+  period, 
+  features, 
+  buttonText, 
+  buttonLink,
+  popular = false,
+  dark = false
+}: {
+  name: string
+  price: string
+  period: string
+  features: string[]
+  buttonText: string
+  buttonLink: string
+  popular?: boolean
+  dark?: boolean
+}) {
   return (
-    <div className={`rounded-2xl p-8 ${popular ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 scale-105' : 'bg-gray-800'}`}>
+    <div className={`rounded-lg p-8 ${
+      dark 
+        ? popular 
+          ? 'bg-emerald-600 border-2 border-emerald-400 scale-105 shadow-2xl' 
+          : 'bg-gray-800 border border-gray-700'
+        : popular 
+          ? 'border-primary shadow-xl scale-105' 
+          : 'border'
+    }`}>
       {popular && (
-        <span className="bg-white text-emerald-600 text-sm px-4 py-1 rounded-full font-medium mb-4 inline-block">
-          POPULAR
-        </span>
+        <div className={`text-sm font-semibold px-3 py-1 rounded-full inline-block mb-4 ${
+          dark ? 'bg-emerald-800 text-white' : 'bg-primary text-primary-foreground'
+        }`}>
+          Most Popular
+        </div>
       )}
-      <h3 className="text-2xl font-bold mb-2">{name}</h3>
-      <div className="mb-6">
-        <span className="text-4xl font-bold">{price}</span>
-        <span className="text-gray-400">{period}</span>
+      
+      <h3 className="text-2xl font-bold">{name}</h3>
+      
+      <div className="mt-4 mb-6">
+        <span className="text-5xl font-bold">{price}</span>
+        <span className={`text-lg ${dark ? 'text-gray-400' : 'text-muted-foreground'}`}>
+          {period}
+        </span>
       </div>
+
       <ul className="space-y-3 mb-8">
-        {features.map((feature: string, i: number) => (
-          <li key={i} className="flex items-start gap-2">
-            <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-            <span>{feature}</span>
+        {features.map((feature, i) => (
+          <li key={i} className="flex items-start gap-3">
+            <span className={`text-xl ${dark ? 'text-emerald-400' : 'text-primary'}`}>✓</span>
+            <span className={`text-sm ${dark ? 'text-gray-300' : ''}`}>{feature}</span>
           </li>
         ))}
       </ul>
+
       <Link href={buttonLink}>
-        <Button className={`w-full ${popular ? 'bg-white text-emerald-600 hover:bg-gray-100' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+        <Button 
+          className={`w-full ${
+            popular 
+              ? 'bg-white text-emerald-600 hover:bg-gray-100' 
+              : dark
+                ? 'bg-gray-700 hover:bg-gray-600 text-white'
+                : ''
+          }`}
+          size="lg"
+        >
           {buttonText}
         </Button>
       </Link>

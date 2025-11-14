@@ -1,5 +1,5 @@
-import { Analytics } from "@vercel/analytics/next"
 import { ClerkProvider } from '@clerk/nextjs'
+import { Analytics } from '@vercel/analytics/next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
@@ -17,17 +17,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  
+
   if (!publishableKey) {
     throw new Error('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY')
   }
 
   return (
     <ClerkProvider publishableKey={publishableKey}>
-      <html lang="en" className="h-full">
-        <body className={`${inter.className} h-full`}>
+      <html lang="en">
+        <body className={inter.className}>
           <Header />
           {children}
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
