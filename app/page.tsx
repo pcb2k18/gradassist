@@ -228,7 +228,7 @@ export default async function Home() {
       
       <PricingCard 
         name="Pro"
-        price="$11.99"
+        price="$5.99"
         period="/month"
         popular
         features={[
