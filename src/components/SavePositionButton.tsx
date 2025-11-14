@@ -9,35 +9,35 @@ import { supabase } from '@/lib/supabase'
 
 export default function SavePositionButton({ 
   positionId, 
-  initialSaved = false 
+  initialSaved = false,
+  forceCheck = false
 }: { 
   positionId: string
-  initialSaved?: boolean 
+  initialSaved?: boolean
+  forceCheck?: boolean
 }) {
   const [saved, setSaved] = useState(initialSaved)
   const [loading, setLoading] = useState(false)
-  const [checking, setChecking] = useState(true)
+  const [checking, setChecking] = useState(forceCheck)
   const { isSignedIn, userId } = useAuth()
   const router = useRouter()
 
-  // Fetch actual saved state on mount
+  // Fetch saved state on mount if forceCheck=true
   useEffect(() => {
     async function checkSavedState() {
-      if (!userId) {
+      if (!forceCheck || !userId) {
         setChecking(false)
         return
       }
 
       try {
-        // Get user's profile
         const { data: profile } = await supabase
           .from('profiles')
           .select('id')
           .eq('clerk_id', userId)
-          .single()
+          .maybeSingle()
 
         if (profile) {
-          // Check if position is saved
           const { data: savedPosition } = await supabase
             .from('saved_positions')
             .select('id')
@@ -55,44 +55,30 @@ export default function SavePositionButton({
     }
 
     checkSavedState()
-  }, [userId, positionId])
+  }, [userId, positionId, forceCheck])
 
   // Sync with prop changes (when parent updates savedPositionIds)
   useEffect(() => {
-    if (!checking) {
+    if (!checking && !forceCheck) {
       setSaved(initialSaved)
     }
-  }, [initialSaved, checking])
+  }, [initialSaved, checking, forceCheck])
 
   const handleSave = async () => {
-    console.log('=== SAVE BUTTON CLICKED ===')
-    console.log('isSignedIn:', isSignedIn)
-    console.log('userId:', userId)
-    console.log('positionId:', positionId)
-    
     if (!isSignedIn) {
-      console.log('❌ Not signed in, redirecting...')
       router.push('/sign-in')
       return
     }
 
     if (!userId) {
-      console.log('❌ No userId found!')
       alert('Authentication error: No user ID found')
       return
     }
 
     setLoading(true)
     const method = saved ? 'DELETE' : 'POST'
-    console.log('Method:', method)
 
     try {
-      console.log('Sending request to:', `/api/positions/${positionId}/save`)
-      console.log('Headers:', {
-        'Content-Type': 'application/json',
-        'x-user-id': userId,
-      })
-
       const res = await fetch(`/api/positions/${positionId}/save`, {
         method,
         headers: {
@@ -101,20 +87,16 @@ export default function SavePositionButton({
         },
       })
       
-      console.log('Response status:', res.status)
       const data = await res.json()
-      console.log('Response data:', data)
 
       if (res.ok) {
-        console.log('✅ Success!')
         setSaved(!saved)
         router.refresh()
       } else {
-        console.log('❌ Failed:', data.error)
         alert(data.error || 'Failed to save position')
       }
     } catch (error) {
-      console.error('❌ Save error:', error)
+      console.error('Save error:', error)
       alert('Failed to save position')
     } finally {
       setLoading(false)

@@ -1,8 +1,9 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Share2, ExternalLink, MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
+import { Share2, ExternalLink, MapPin, DollarSign, Calendar, Briefcase, Check } from 'lucide-react'
 import SavePositionButton from '@/components/SavePositionButton'
+import { useState } from 'react'
 
 interface PositionDetailProps {
   position: any;
@@ -15,6 +16,42 @@ export default function PositionDetail({
   isSaved, 
   onToggleSave 
 }: PositionDetailProps) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleShare() {
+    const shareUrl = `${window.location.origin}/positions/${position.id}`
+    const shareData = {
+      title: `${position.title} at ${position.university}`,
+      text: `Check out this graduate assistantship position${position.stipend_amount ? ` - $${position.stipend_amount.toLocaleString()}/year stipend` : ''}!`,
+      url: shareUrl,
+    }
+
+    // Try native share first (mobile)
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData)
+      } catch (err: any) {
+        // User cancelled or error - fall back to copy
+        if (err.name !== 'AbortError') {
+          copyToClipboard(shareUrl)
+        }
+      }
+    } else {
+      // Desktop or no share support - copy link
+      copyToClipboard(shareUrl)
+    }
+  }
+
+  function copyToClipboard(url: string) {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }).catch((err) => {
+      console.error('Failed to copy:', err)
+      alert('Failed to copy link')
+    })
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
@@ -34,7 +71,6 @@ export default function PositionDetail({
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
-          {/* Use SavePositionButton if no callback provided, otherwise use callback for backwards compatibility */}
           {onToggleSave ? (
             <Button
               variant={isSaved ? 'default' : 'outline'}
@@ -44,12 +80,23 @@ export default function PositionDetail({
               {isSaved ? 'Saved' : 'Save'}
             </Button>
           ) : (
-            <SavePositionButton positionId={position.id} initialSaved={isSaved} />
+            <SavePositionButton positionId={position.id} initialSaved={isSaved} forceCheck={true} />
           )}
-          <Button variant="outline">
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
+          
+          <Button variant="outline" onClick={handleShare}>
+            {copied ? (
+              <>
+                <Check className="h-4 w-4 mr-2 text-emerald-600" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </>
+            )}
           </Button>
+          
           {position.application_url && (
             <Button className="bg-emerald-600 hover:bg-emerald-700" asChild>
               <a href={position.application_url} target="_blank" rel="noopener noreferrer">

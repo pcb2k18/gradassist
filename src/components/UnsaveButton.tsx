@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Trash2 } from 'lucide-react'
+import { Bookmark } from 'lucide-react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
@@ -12,42 +12,30 @@ export default function UnsaveButton({ positionId, savedId }: { positionId: stri
   const { userId } = useAuth()
 
   const handleUnsave = async () => {
-    if (!confirm('Remove this position from your saved list?')) {
-      return
-    }
-
     if (!userId) {
-      alert('Authentication error: Please sign in again')
+      alert('Please sign in to manage saved positions')
       return
     }
 
     setLoading(true)
     
     try {
-      console.log('🗑️ Unsaving position:', positionId)
-      console.log('User ID:', userId)
-
       const res = await fetch(`/api/positions/${positionId}/save`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId, // ✅ Added the missing header!
+          'x-user-id': userId,
         },
       })
 
-      console.log('Response status:', res.status)
-      const data = await res.json()
-      console.log('Response data:', data)
-
       if (!res.ok) {
+        const data = await res.json()
         throw new Error(data.error || 'Failed to unsave')
       }
 
-      console.log('✅ Successfully unsaved!')
-      // Refresh the page to show updated list
       router.refresh()
     } catch (error: any) {
-      console.error('❌ Unsave error:', error)
+      console.error('Unsave error:', error)
       alert(error.message || 'Failed to unsave position')
       setLoading(false)
     }
@@ -56,13 +44,13 @@ export default function UnsaveButton({ positionId, savedId }: { positionId: stri
   return (
     <Button 
       variant="ghost" 
-      size="sm" 
+      size="icon" 
       onClick={handleUnsave} 
       disabled={loading}
-      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 flex-shrink-0"
+      aria-label="Remove from saved"
     >
-      <Trash2 className="h-4 w-4 mr-2" />
-      {loading ? 'Removing...' : 'Remove'}
+      <Bookmark className="h-5 w-5 fill-current" />
     </Button>
   )
 }

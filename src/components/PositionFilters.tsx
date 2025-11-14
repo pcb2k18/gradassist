@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, SlidersHorizontal, X, Bell } from 'lucide-react'
+import { Search, SlidersHorizontal, X, Bell, Lock } from 'lucide-react'
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import Link from 'next/link'
 import {
@@ -16,11 +17,38 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { Slider } from "@/components/ui/slider"
+import { supabase } from '@/lib/supabase'
+import { useEffect } from 'react'
 
 export default function PositionFilters({ totalCount }: { totalCount: number }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useUser()
   const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  const [userTier, setUserTier] = useState<string>('free')
+  const [stipendRange, setStipendRange] = useState([0, 100000])
+
+  // Fetch user's subscription tier
+  useEffect(() => {
+    async function fetchUserTier() {
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('clerk_id', user.id)
+        .single()
+
+      if (profile) {
+        setUserTier(profile.subscription_tier || 'free')
+      }
+    }
+
+    fetchUserTier()
+  }, [user])
+
+  const isPro = userTier === 'pro' || userTier === 'premium'
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -39,7 +67,19 @@ export default function PositionFilters({ totalCount }: { totalCount: number }) 
 
   function clearFilters() {
     setSearchValue('')
+    setStipendRange([0, 100000])
     router.push('/positions')
+  }
+
+  function handleStipendFilter() {
+    if (!isPro) {
+      router.push('/pricing')
+      return
+    }
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('min_stipend', stipendRange[0].toString())
+    params.set('max_stipend', stipendRange[1].toString())
+    router.push(`/positions?${params.toString()}`)
   }
 
   const hasFilters = searchParams.toString().length > 0
@@ -148,23 +188,63 @@ export default function PositionFilters({ totalCount }: { totalCount: number }) 
                 <SelectItem value="IL">Illinois</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Pro Feature - Sort */}
+            <Select
+              value={searchParams.get('sort') || 'recent'}
+              onValueChange={(val) => {
+                if (!isPro && val !== 'recent') {
+                  router.push('/pricing')
+                  return
+                }
+                updateFilter('sort', val)
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Most Recent</SelectItem>
+                <SelectItem value="stipend_high" disabled={!isPro}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>Highest Stipend</span>
+                    {!isPro && <Lock className="h-3 w-3 ml-2 text-gray-400" />}
+                  </div>
+                </SelectItem>
+                <SelectItem value="stipend_low" disabled={!isPro}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>Lowest Stipend</span>
+                    {!isPro && <Lock className="h-3 w-3 ml-2 text-gray-400" />}
+                  </div>
+                </SelectItem>
+                <SelectItem value="deadline" disabled={!isPro}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>Deadline Soon</span>
+                    {!isPro && <Lock className="h-3 w-3 ml-2 text-gray-400" />}
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Mobile Filters */}
+          {/* Advanced Filters Button (Mobile + Desktop) */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
-                <SlidersHorizontal className="h-4 w-4" />
+              <Button variant="outline" size="sm">
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">More Filters</span>
               </Button>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="w-full sm:max-w-md overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Filters</SheetTitle>
                 <SheetDescription>
                   Narrow down your position search
                 </SheetDescription>
               </SheetHeader>
-              <div className="mt-6 space-y-4">
+              
+              <div className="mt-6 space-y-6">
+                {/* Basic Filters */}
                 <div>
                   <label className="text-sm font-medium mb-2 block">Field of Study</label>
                   <Select
@@ -221,6 +301,98 @@ export default function PositionFilters({ totalCount }: { totalCount: number }) 
                       <SelectItem value="IL">Illinois</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Pro Feature - Stipend Range */}
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium">Annual Stipend</label>
+                    {!isPro && (
+                      <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                        <Lock className="h-3 w-3" />
+                        Pro
+                      </span>
+                    )}
+                  </div>
+                  
+                  {isPro ? (
+                    <>
+                      <Slider
+                        value={stipendRange}
+                        onValueChange={setStipendRange}
+                        min={0}
+                        max={100000}
+                        step={5000}
+                        className="mb-2"
+                      />
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <span>${stipendRange[0].toLocaleString()}</span>
+                        <span>${stipendRange[1].toLocaleString()}</span>
+                      </div>
+                      <Button 
+                        onClick={handleStipendFilter}
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-2"
+                      >
+                        Apply Stipend Filter
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="bg-gray-50 border-2 border-dashed rounded-lg p-4 text-center">
+                      <Lock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 mb-3">
+                        Filter by stipend range with Pro
+                      </p>
+                      <Link href="/pricing">
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                          Upgrade to Pro
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Pro Feature - Deadline Filter */}
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium">Application Deadline</label>
+                    {!isPro && (
+                      <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                        <Lock className="h-3 w-3" />
+                        Pro
+                      </span>
+                    )}
+                  </div>
+                  
+                  {isPro ? (
+                    <Select
+                      value={searchParams.get('deadline') || 'all'}
+                      onValueChange={(val) => updateFilter('deadline', val)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All deadlines" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All deadlines</SelectItem>
+                        <SelectItem value="7">Next 7 days</SelectItem>
+                        <SelectItem value="30">Next 30 days</SelectItem>
+                        <SelectItem value="90">Next 3 months</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="bg-gray-50 border-2 border-dashed rounded-lg p-4 text-center">
+                      <Lock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 mb-3">
+                        Filter by deadline with Pro
+                      </p>
+                      <Link href="/pricing">
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                          Upgrade to Pro
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </SheetContent>
