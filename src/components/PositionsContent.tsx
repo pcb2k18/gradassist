@@ -1,5 +1,7 @@
 'use client'
-
+import { Lock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
@@ -172,53 +174,90 @@ export default function PositionsContent() {
   }
 
   return (
-    <div className="flex h-screen">
-      <div className="hidden lg:block">
-        <PositionsSidebar />
-      </div>
+  <div className="flex h-screen">
+    <div className="hidden lg:block">
+      <PositionsSidebar />
+    </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <PositionFilters totalCount={totalCount} />
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <PositionFilters totalCount={totalCount} />
 
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full grid lg:grid-cols-[400px_1fr]">
-            <div className="border-r bg-white overflow-y-auto">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-                </div>
-              ) : positions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <p className="text-lg font-medium mb-2">No positions found</p>
-                  <p className="text-gray-600">Try adjusting your filters</p>
-                </div>
-              ) : (
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full grid lg:grid-cols-[400px_1fr]">
+          <div className="border-r bg-white overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+              </div>
+            ) : positions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <p className="text-lg font-medium mb-2">No positions found</p>
+                <p className="text-gray-600">Try adjusting your filters</p>
+              </div>
+            ) : (
+              <>
                 <PositionsList 
-                  positions={positions}
+                  positions={positions.slice(0, 50)} // Limit to 50 positions
                   selectedId={selectedPosition?.id}
                   savedPositionIds={savedPositionIds}
                   onSelect={handlePositionClick}
                   onToggleSave={handleToggleSave}
                 />
-              )}
-            </div>
+                
+                {/* Paywall at position #50 */}
+                {positions.length > 50 && (
+                  <div className="p-6 bg-gradient-to-b from-white to-gray-50 border-t-2">
+                    <div className="max-w-md mx-auto text-center">
+                      <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Lock className="h-8 w-8 text-emerald-600" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">
+                        You've viewed 50 of {totalCount}+ positions
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        Upgrade to Pro to unlock {totalCount - 50}+ more positions from 400 universities
+                      </p>
+                      
+                      <div className="bg-white rounded-lg border p-4 mb-4 text-left">
+                        <p className="text-sm font-semibold mb-2">Upgrade to Pro to get:</p>
+                        <ul className="text-sm space-y-1 text-gray-700">
+                          <li>✓ Access to ALL {totalCount}+ positions</li>
+                          <li>✓ Unlimited saved positions</li>
+                          <li>✓ Application tracker</li>
+                          <li>✓ Advanced filters & alerts</li>
+                        </ul>
+                      </div>
 
-            <div className="hidden lg:block bg-gray-50 overflow-y-auto">
-              {selectedPosition ? (
-                <PositionDetail 
-                  position={selectedPosition}
-                  isSaved={savedPositionIds.has(selectedPosition.id)}
-                  onToggleSave={handleToggleSave}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  Select a position to view details
-                </div>
-              )}
-            </div>
+                      <Link href="/pricing">
+  <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg">
+    Upgrade to Pro - $11.99/month
+  </Button>
+</Link>
+                      
+                
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="hidden lg:block bg-gray-50 overflow-y-auto">
+            {selectedPosition ? (
+              <PositionDetail 
+                position={selectedPosition}
+                isSaved={savedPositionIds.has(selectedPosition.id)}
+                onToggleSave={handleToggleSave}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                Select a position to view details
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
+  </div>
+)
 }
