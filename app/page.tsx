@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Search, Target, TrendingUp, BookOpen, GraduationCap, DollarSign, MapPin, Calendar, Check, ChevronDown, Mail, Linkedin, Twitter, Facebook } from 'lucide-react'
+import { ArrowRight, Search, Target, TrendingUp, BookOpen, GraduationCap, DollarSign, MapPin, Calendar, Check, ChevronDown, Mail, Linkedin, Twitter, Facebook, Zap, Lock } from 'lucide-react'
 import { supabaseServer } from '@/lib/supabase-server'
 import { Card } from '@/components/ui/card'
 
@@ -203,11 +203,22 @@ export default async function Home() {
       </section>
 
       {/* Pricing Section */}
+{/* Pricing Section */}
 <section className="py-20 bg-gray-900 text-white">
   <div className="container mx-auto px-4">
+    {/* Black Friday Badge */}
+    <div className="text-center mb-8">
+      <div className="inline-flex items-center gap-2 bg-emerald-600 px-6 py-3 rounded-full">
+        <Zap className="h-5 w-5" />
+        <span className="font-bold">BLACK FRIDAY: Lock in $5.99/month Forever</span>
+      </div>
+    </div>
+
     <div className="text-center mb-16">
-      <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-      <p className="text-xl text-gray-400">Start free, upgrade when you're ready</p>
+      <h2 className="text-4xl font-bold mb-4">Founders' Pricing</h2>
+      <p className="text-xl text-gray-400">
+        Join early adopters who locked in $5.99/month. Price increases to $11.99 soon.
+      </p>
     </div>
 
     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -230,24 +241,25 @@ export default async function Home() {
         name="Pro"
         price="$5.99"
         period="/month"
+        originalPrice="$11.99"
         popular
         features={[
           "Access to ALL 1,000+ positions",
           "Unlimited saved positions",
-          "Application tracker",
-          "Advanced filters (stipend, deadline)",
-          "Email alerts (weekly + instant)",
-          "Early access (24hrs before free)",
-          "Priority support"
+          "Application tracker (Coming soon)",
+          "Advanced filters (Coming soon)",
+          "Email alerts (Coming soon)",
+          "Lock in this price forever"
         ]}
-        buttonText="Upgrade to Pro"
+        buttonText="Upgrade to Pro - Save 50%"
         buttonLink="/pricing"
         dark
+        blackFriday
       />
     </div>
 
-    <p className="text-center text-gray-400 mt-8">
-      All plans include access to positions from 400+ universities
+    <p className="text-center text-gray-400 mt-8 text-sm">
+      ⚡ First 500 users lock in $5.99/month for life • New features added monthly
     </p>
   </div>
 </section>
@@ -455,43 +467,50 @@ function HowItWorksStep({ icon, number, title, description }: any) {
 function PricingCard({ 
   name, 
   price, 
-  period, 
+  period,
+  originalPrice,
   features, 
   buttonText, 
   buttonLink,
   popular = false,
-  dark = false
+  dark = false,
+  blackFriday = false
 }: {
   name: string
   price: string
   period: string
+  originalPrice?: string
   features: string[]
   buttonText: string
   buttonLink: string
   popular?: boolean
   dark?: boolean
+  blackFriday?: boolean
 }) {
   return (
     <div className={`rounded-lg p-8 ${
       dark 
         ? popular 
-          ? 'bg-emerald-600 border-2 border-emerald-400 scale-105 shadow-2xl' 
+          ? 'bg-emerald-600 border-2 border-emerald-400 scale-105 shadow-2xl relative' 
           : 'bg-gray-800 border border-gray-700'
         : popular 
           ? 'border-primary shadow-xl scale-105' 
           : 'border'
     }`}>
-      {popular && (
-        <div className={`text-sm font-semibold px-3 py-1 rounded-full inline-block mb-4 ${
-          dark ? 'bg-emerald-800 text-white' : 'bg-primary text-primary-foreground'
-        }`}>
-          Most Popular
+      {popular && blackFriday && (
+        <div className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full rotate-12">
+          50% OFF
         </div>
       )}
       
       <h3 className="text-2xl font-bold">{name}</h3>
       
       <div className="mt-4 mb-6">
+        {originalPrice && (
+          <span className="text-lg text-gray-400 line-through block mb-1">
+            {originalPrice}
+          </span>
+        )}
         <span className="text-5xl font-bold">{price}</span>
         <span className={`text-lg ${dark ? 'text-gray-400' : 'text-muted-foreground'}`}>
           {period}
@@ -511,7 +530,7 @@ function PricingCard({
         <Button 
           className={`w-full ${
             popular 
-              ? 'bg-white text-emerald-600 hover:bg-gray-100' 
+              ? 'bg-white text-emerald-600 hover:bg-gray-100 font-bold' 
               : dark
                 ? 'bg-gray-700 hover:bg-gray-600 text-white'
                 : ''

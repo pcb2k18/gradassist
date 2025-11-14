@@ -246,10 +246,10 @@ export default function PositionsContent() {
                         </div>
 
                         <Link href="/pricing">
-                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg">
-                            Upgrade to Pro - $5.99/month
-                          </Button>
-                        </Link>
+  <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg">
+    Upgrade to Pro - $5.99/month (50% OFF)
+  </Button>
+</Link>
                       </div>
                     </div>
                   )}
