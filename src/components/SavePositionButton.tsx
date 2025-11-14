@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 export default function SavePositionButton({ 
   positionId, 
@@ -22,7 +23,6 @@ export default function SavePositionButton({
   const { isSignedIn, userId } = useAuth()
   const router = useRouter()
 
-  // Fetch saved state on mount if forceCheck=true
   useEffect(() => {
     async function checkSavedState() {
       if (!forceCheck || !userId) {
@@ -57,7 +57,6 @@ export default function SavePositionButton({
     checkSavedState()
   }, [userId, positionId, forceCheck])
 
-  // Sync with prop changes (when parent updates savedPositionIds)
   useEffect(() => {
     if (!checking && !forceCheck) {
       setSaved(initialSaved)
@@ -71,7 +70,7 @@ export default function SavePositionButton({
     }
 
     if (!userId) {
-      alert('Authentication error: No user ID found')
+      toast.error('Authentication error: No user ID found')
       return
     }
 
@@ -91,13 +90,14 @@ export default function SavePositionButton({
 
       if (res.ok) {
         setSaved(!saved)
+        toast.success(saved ? 'Position removed' : 'Position saved!')
         router.refresh()
       } else {
-        alert(data.error || 'Failed to save position')
+        toast.error(data.error || 'Failed to save position')
       }
     } catch (error) {
       console.error('Save error:', error)
-      alert('Failed to save position')
+      toast.error('Failed to save position')
     } finally {
       setLoading(false)
     }

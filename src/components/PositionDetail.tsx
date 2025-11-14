@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Share2, ExternalLink, MapPin, DollarSign, Calendar, Briefcase, Check } from 'lucide-react'
 import SavePositionButton from '@/components/SavePositionButton'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface PositionDetailProps {
   position: any;
@@ -26,18 +27,15 @@ export default function PositionDetail({
       url: shareUrl,
     }
 
-    // Try native share first (mobile)
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData)
       } catch (err: any) {
-        // User cancelled or error - fall back to copy
         if (err.name !== 'AbortError') {
           copyToClipboard(shareUrl)
         }
       }
     } else {
-      // Desktop or no share support - copy link
       copyToClipboard(shareUrl)
     }
   }
@@ -45,10 +43,11 @@ export default function PositionDetail({
   function copyToClipboard(url: string) {
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true)
+      toast.success('Link copied to clipboard!')
       setTimeout(() => setCopied(false), 2000)
     }).catch((err) => {
       console.error('Failed to copy:', err)
-      alert('Failed to copy link')
+      toast.error('Failed to copy link')
     })
   }
 

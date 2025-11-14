@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Toaster } from 'sonner'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
@@ -29,6 +30,7 @@ export default function RootLayout({
         <body className={inter.className}>
           <Header />
           {children}
+          <Toaster position="top-right" />
           <Analytics />
           <SpeedInsights />
         </body>

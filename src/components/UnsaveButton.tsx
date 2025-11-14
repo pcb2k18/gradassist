@@ -5,6 +5,7 @@ import { Bookmark } from 'lucide-react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
+import { toast } from 'sonner'
 
 export default function UnsaveButton({ positionId, savedId }: { positionId: string, savedId: string }) {
   const [loading, setLoading] = useState(false)
@@ -13,7 +14,7 @@ export default function UnsaveButton({ positionId, savedId }: { positionId: stri
 
   const handleUnsave = async () => {
     if (!userId) {
-      alert('Please sign in to manage saved positions')
+      toast.error('Please sign in to manage saved positions')
       return
     }
 
@@ -33,10 +34,11 @@ export default function UnsaveButton({ positionId, savedId }: { positionId: stri
         throw new Error(data.error || 'Failed to unsave')
       }
 
+      toast.success('Position removed from saved')
       router.refresh()
     } catch (error: any) {
       console.error('Unsave error:', error)
-      alert(error.message || 'Failed to unsave position')
+      toast.error(error.message || 'Failed to unsave position')
       setLoading(false)
     }
   }
