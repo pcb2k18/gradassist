@@ -19,6 +19,7 @@
     "@stripe/stripe-js": "^8.4.0",
     "@supabase/supabase-js": "^2.81.0",
     "@tanstack/react-query": "^5.90.7",
+    "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

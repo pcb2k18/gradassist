@@ -51,7 +51,7 @@ export default function PricingPage() {
               "Early access (24hrs before free users)",
               "Priority support"
             ]}
-            priceId="price_1STB8CHrkZmcYV7r4aRtFyt3"
+            priceId="price_1STDNFHrkZmcYV7rD52u2e1l"
           />
         </div>
 
