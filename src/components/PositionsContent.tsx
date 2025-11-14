@@ -23,17 +23,40 @@ export default function PositionsContent() {
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const [savedPositionIds, setSavedPositionIds] = useState<Set<string>>(new Set())
+  const [userTier, setUserTier] = useState<string>('free')
 
+  // Fetch positions when search params change
   useEffect(() => {
     fetchPositions()
   }, [searchParams])
 
+  // Fetch saved positions when user loads
   useEffect(() => {
     if (user) {
       console.log('👤 User loaded, fetching saved positions...')
       fetchSavedPositions()
+      fetchUserTier()
     }
   }, [user])
+
+  async function fetchUserTier() {
+    if (!user) return
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('clerk_id', user.id)
+        .single()
+
+      if (profile) {
+        console.log('User tier:', profile.subscription_tier)
+        setUserTier(profile.subscription_tier || 'free')
+      }
+    } catch (error) {
+      console.error('Error fetching user tier:', error)
+    }
+  }
 
   async function fetchSavedPositions() {
     if (!user) return
@@ -163,6 +186,10 @@ export default function PositionsContent() {
     }
   }
 
+  // Determine which positions to show based on tier
+  const isPro = userTier === 'pro' || userTier === 'premium'
+  const displayedPositions = isPro ? positions : positions.slice(0, 10)
+
   return (
     <div className="flex h-screen">
       <div className="hidden lg:block">
@@ -187,24 +214,25 @@ export default function PositionsContent() {
               ) : (
                 <>
                   <PositionsList 
-                    positions={positions.slice(0, 50)}
+                    positions={displayedPositions}
                     selectedId={selectedPosition?.id}
                     savedPositionIds={savedPositionIds}
                     onSelect={handlePositionClick}
                     onToggleSave={handleToggleSave}
                   />
                   
-                  {positions.length > 50 && (
+                  {/* Paywall at position #10 - ONLY for free users */}
+                  {positions.length > 10 && !isPro && (
                     <div className="p-6 bg-gradient-to-b from-white to-gray-50 border-t-2">
                       <div className="max-w-md mx-auto text-center">
                         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Lock className="h-8 w-8 text-emerald-600" />
                         </div>
                         <h3 className="text-xl font-bold mb-2">
-                          You've viewed 50 of {totalCount}+ positions
+                          You've viewed 10 of {totalCount}+ positions
                         </h3>
                         <p className="text-gray-600 mb-4">
-                          Upgrade to Pro to unlock {totalCount - 50}+ more positions from 400 universities
+                          Upgrade to Pro to unlock {totalCount - 10}+ more positions from 400+ universities
                         </p>
                         
                         <div className="bg-white rounded-lg border p-4 mb-4 text-left">
@@ -219,7 +247,7 @@ export default function PositionsContent() {
 
                         <Link href="/pricing">
                           <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg">
-                            Upgrade to Pro - $11.99/month
+                            Upgrade to Pro - $5.99/month
                           </Button>
                         </Link>
                       </div>

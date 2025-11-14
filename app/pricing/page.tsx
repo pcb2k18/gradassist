@@ -38,21 +38,21 @@ export default function PricingPage() {
           {/* Pro Tier */}
           <PricingCard
             name="Pro"
-            price="$11.99"
+            price="$5.99"
             period="/month"
             popular
             features={[
               "Access to ALL 1,000+ positions",
-              "All 400 universities",
+              "All 400+ universities",
               "Unlimited saved positions",
-              "Application tracker (Kanban board)",
-              "Advanced filters (stipend, deadline)",
-              "Email alerts (weekly + instant)",
+              "Application tracker",
+              "Advanced filters",
+              "Email alerts (daily, weekly + instant)",
               "Early access (24hrs before free users)",
               "Priority support"
             ]}
-            /*priceId="price_1STB8CHrkZmcYV7r4aRtFyt3"*/
-            priceId="price_1SSIbjQdd1Qm80fTz3z1mcqV"
+            priceId="price_1STB8CHrkZmcYV7r4aRtFyt3"
+            /*priceId="price_1SSIbjQdd1Qm80fTz3z1mcqV"*/ /*demo priceId*/
           />
         </div>
 
